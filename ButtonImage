@@ -1,0 +1,89 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public static class Window extends JFrame {
+
+    public Window() {
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(800, 600);
+        setLocationRelativeTo(null);
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        Image image1 = new Image(200, 300);
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        Button button1 = new Button("Start", image1);
+
+        mainPanel.add(image1, BorderLayout.CENTER);
+        buttonPanel.add(button1);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
+        setVisible(true);
+    }
+
+    class Image extends JPanel {
+        private int x, y;
+
+        Image(int x, int y) {
+            this.x = x;
+            this.y = y;
+            setPreferredSize(new Dimension(800, 500)); // Задаем предпочтительный размер
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D graphic = (Graphics2D) g;
+            graphic.setColor(Color.blue);
+            graphic.fillRect(x, y, 50, 50);
+        }
+
+        public void move(int x, int y) {
+            this.x = x;
+            this.y = y;
+            this.repaint();
+        }
+    }
+
+    class Button extends JButton {
+        Image Image;
+
+        Button(String text, Image Image) {
+            super(text);
+            this.Image = Image;
+
+            // Настройка внешнего вида кнопки
+            setFont(new Font("Arial", Font.BOLD, 16));
+            setBackground(new Color(70, 130, 180));
+            setForeground(Color.WHITE);
+            setFocusPainted(false);
+            setPreferredSize(new Dimension(200, 50));
+
+            // Добавляем обработчик события для кнопки
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Image.move(500, 400);
+
+                    // Через 500 мс возвращаем обычное состояние
+                    Timer timer = new Timer(500, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            Image.move(200, 300);
+                        }
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                }
+            });
+        }
+    }
+
+}
+void main() {
+    new Window();
+
+}
