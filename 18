@@ -1,0 +1,76 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public static class Window extends JFrame{
+    public Window(){
+        setSize(800,600);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Window");
+
+        JButton button = new JButton("Кнопка1");
+        JButton button2 = new JButton("Кнопка2");
+        //button.setBounds(0,0,10,100);
+        var dd = new Draw();
+        dd.add(button);
+        dd.add(button2);
+        add(dd);
+
+        setVisible(true);
+    }
+    private void draw(Graphics2D graphics){
+        graphics.setColor(Color.blue);
+        graphics.fillRect(50,50,100,100);
+        graphics.setColor(Color.green);
+        graphics.fillOval(300,0,100,100);
+
+    }
+    class Draw extends JPanel{
+        @Override
+        protected void paintComponent(Graphics g){
+            super.paintComponent(g);
+            Graphics2D graphics = (Graphics2D) g;
+            draw(graphics);
+
+        }
+    }
+    class Button extends JButton {
+
+
+        Button(String text) {
+            super(text);
+
+
+            // Настройка внешнего вида кнопки
+            setFont(new Font("Arial", Font.BOLD, 16));
+            setBackground(new Color(70, 130, 180));
+            setForeground(Color.WHITE);
+            setFocusPainted(false);
+            setPreferredSize(new Dimension(200, 50));
+
+            // Добавляем обработчик события для кнопки
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+
+                    // Через 500 мс возвращаем обычное состояние
+                    Timer timer = new Timer(500, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+
+                        }
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                }
+            });
+        }
+    }
+}
+
+void main() {
+    new Window();
+}
