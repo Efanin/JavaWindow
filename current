@@ -1,0 +1,46 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public static class Window extends JFrame{
+    private int x1=0;
+    public Window(){
+        setSize(800,600);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Window");
+
+
+        var button1 = new JButton("Start");
+        var draw = new Draw();
+        button1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                x1+=50;
+            }
+        });
+        draw.add(button1);
+        add(draw);
+
+        setVisible(true);
+    }
+    private void draw(Graphics2D graphics){
+        graphics.setColor(new Color(222, 53, 53));
+        graphics.fillRect(0, 0,100,100);
+        graphics.setColor(new Color(65, 154, 195));
+        graphics.fillOval(30, 30,100,100);
+    }
+    class Draw extends JPanel{
+        @Override
+        protected void paintComponent(Graphics g){
+            super.paintComponent(g);
+            Graphics2D graphics = (Graphics2D) g;
+            draw(graphics);
+        }
+    }
+}
+
+void main() {
+    new Window();
+}
