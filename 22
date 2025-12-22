@@ -1,0 +1,84 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public static class Window extends JFrame{
+    int x = 0;
+    public Window(){
+        setSize(800,600);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Window");
+        JPanel panel = new JPanel(new GridLayout(3, 3, 8, 8));
+        JButton[] buttons = new JButton[9];
+        for (int i = 0; i < 9; i++) {
+            buttons[i] = new Button("Кнопка" + i);
+            panel.add(buttons[i]);
+        }
+        JLabel scoreLabel = new JLabel("X: 565465446", SwingConstants.CENTER);
+        scoreLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        scoreLabel.setText("fsgdthng");
+
+        add(panel, BorderLayout.CENTER);
+        add(scoreLabel,BorderLayout.NORTH);
+
+        setVisible(true);
+    }
+    private void draw(Graphics2D graphics){
+        graphics.setColor(Color.blue);
+        for (int i = 0; i < x; i++) {
+            graphics.fillRect(x*55,50,100,100);
+        }
+
+        graphics.setColor(Color.green);
+        graphics.fillOval(300,0,100,100);
+
+    }
+    class Draw extends JPanel{
+        @Override
+        protected void paintComponent(Graphics g){
+            super.paintComponent(g);
+            Graphics2D graphics = (Graphics2D) g;
+            draw(graphics);
+
+        }
+    }
+    class Button extends JButton {
+
+
+        Button(String text) {
+            super(text);
+
+
+            // Настройка внешнего вида кнопки
+            setFont(new Font("Arial", Font.BOLD, 16));
+            setBackground(new Color(70, 130, 180));
+            setForeground(Color.WHITE);
+            setFocusPainted(false);
+            setPreferredSize(new Dimension(200, 50));
+
+            // Добавляем обработчик события для кнопки
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+
+                    // Через 500 мс возвращаем обычное состояние
+                    Timer timer = new Timer(500, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+
+                        }
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                }
+            });
+        }
+    }
+}
+
+void main() {
+    new Window();
+}
