@@ -1,0 +1,440 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class TicTacToePro extends JFrame {
+
+    private JButton[][] buttons = new JButton[3][3];
+    private char currentPlayer = 'X';
+    private boolean gameOver = false;
+    private int movesCount = 0;
+
+    // Score tracking
+    private int xWins = 0;
+    private int oWins = 0;
+    private int draws = 0;
+
+    private JLabel statusLabel;
+    private JLabel scoreLabel;
+    private JButton newGameButton;
+    private JButton resetScoreButton;
+    private JButton exitButton;
+
+    public TicTacToePro() {
+        setTitle("Крестики-Нолики PRO");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(500, 650);
+        setLocationRelativeTo(null);
+        setResizable(false);
+
+        initComponents();
+        setVisible(true);
+    }
+
+    private void initComponents() {
+        // Main layout
+        setLayout(new BorderLayout(10, 10));
+        getContentPane().setBackground(new Color(240, 240, 240));
+
+        // Top panel - Status and Score
+        JPanel topPanel = new JPanel(new GridLayout(2, 1, 5, 5));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        statusLabel = new JLabel("Ход игрока: " + currentPlayer, SwingConstants.CENTER);
+        statusLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        statusLabel.setForeground(new Color(0, 102, 204));
+
+        scoreLabel = new JLabel("X: " + xWins + " | O: " + oWins + " | Ничьи: " + draws, SwingConstants.CENTER);
+        scoreLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        scoreLabel.setForeground(new Color(102, 102, 102));
+
+        topPanel.add(statusLabel);
+        topPanel.add(scoreLabel);
+        add(topPanel, BorderLayout.NORTH);
+
+        // Game panel - 3x3 grid
+        JPanel gamePanel = new JPanel();
+        gamePanel.setLayout(new GridLayout(3, 3, 8, 8));
+        gamePanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        gamePanel.setBackground(new Color(220, 220, 220));
+
+        // Create buttons with hover effects
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                buttons[row][col] = createGameButton();
+
+                final int r = row;
+                final int c = col;
+                buttons[row][col].addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (!gameOver && buttons[r][c].getText().equals("")) {
+                            makeMove(r, c);
+                        }
+                    }
+                });
+
+                gamePanel.add(buttons[row][col]);
+            }
+        }
+
+        add(gamePanel, BorderLayout.CENTER);
+
+        // Control panel
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10));
+        controlPanel.setBackground(new Color(240, 240, 240));
+
+        newGameButton = createControlButton("Новая игра", new Color(46, 204, 113));
+        newGameButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetGame();
+            }
+        });
+
+        resetScoreButton = createControlButton("Сброс счета", new Color(241, 196, 15));
+        resetScoreButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetScore();
+            }
+        });
+
+        exitButton = createControlButton("Выход", new Color(231, 76, 60));
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        controlPanel.add(newGameButton);
+        controlPanel.add(resetScoreButton);
+        controlPanel.add(exitButton);
+
+        add(controlPanel, BorderLayout.SOUTH);
+
+        // Add keyboard shortcuts
+        setupKeyboardShortcuts();
+    }
+
+    private JButton createGameButton() {
+        JButton button = new JButton();
+        button.setFont(new Font("Arial", Font.BOLD, 70));
+        button.setFocusPainted(false);
+        button.setBackground(Color.WHITE);
+        button.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 2));
+
+        // Hover effect
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (!gameOver && button.getText().equals("")) {
+                    button.setBackground(new Color(245, 245, 245));
+                    button.setBorder(BorderFactory.createLineBorder(new Color(100, 149, 237), 2));
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (!gameOver && button.getText().equals("")) {
+                    button.setBackground(Color.WHITE);
+                    button.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 2));
+                }
+            }
+        });
+
+        return button;
+    }
+
+    private JButton createControlButton(String text, Color color) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 16));
+        button.setBackground(color);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Hover effect for control buttons
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(color.darker());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(color);
+            }
+        });
+
+        return button;
+    }
+
+    private void makeMove(int row, int col) {
+        // Set the button text
+        buttons[row][col].setText(String.valueOf(currentPlayer));
+
+        // Disable hover effect
+        buttons[row][col].setBackground(Color.WHITE);
+        buttons[row][col].setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 2));
+
+        // Set color
+        if (currentPlayer == 'X') {
+            buttons[row][col].setForeground(new Color(231, 76, 60)); // Red
+        } else {
+            buttons[row][col].setForeground(new Color(52, 152, 219)); // Blue
+        }
+
+        movesCount++;
+
+        // Check for win
+        if (checkWin(row, col)) {
+            gameOver = true;
+            highlightWinningCells(row, col);
+
+            // Update scores
+            if (currentPlayer == 'X') {
+                xWins++;
+                statusLabel.setText("Игрок X победил!");
+                statusLabel.setForeground(new Color(231, 76, 60));
+            } else {
+                oWins++;
+                statusLabel.setText("Игрок O победил!");
+                statusLabel.setForeground(new Color(52, 152, 219));
+            }
+
+            updateScoreLabel();
+            showWinningMessage();
+            return;
+        }
+
+        // Check for draw
+        if (movesCount == 9) {
+            gameOver = true;
+            draws++;
+            statusLabel.setText("Ничья!");
+            statusLabel.setForeground(new Color(241, 196, 15));
+
+            updateScoreLabel();
+            showWinningMessage();
+            return;
+        }
+
+        // Switch player
+        currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+        updateStatusLabel();
+    }
+
+    private boolean checkWin(int row, int col) {
+        String symbol = String.valueOf(currentPlayer);
+
+        // Check row
+        if (buttons[row][0].getText().equals(symbol) &&
+                buttons[row][1].getText().equals(symbol) &&
+                buttons[row][2].getText().equals(symbol)) {
+            return true;
+        }
+
+        // Check column
+        if (buttons[0][col].getText().equals(symbol) &&
+                buttons[1][col].getText().equals(symbol) &&
+                buttons[2][col].getText().equals(symbol)) {
+            return true;
+        }
+
+        // Check main diagonal
+        if (row == col) {
+            if (buttons[0][0].getText().equals(symbol) &&
+                    buttons[1][1].getText().equals(symbol) &&
+                    buttons[2][2].getText().equals(symbol)) {
+                return true;
+            }
+        }
+
+        // Check anti-diagonal
+        if (row + col == 2) {
+            if (buttons[0][2].getText().equals(symbol) &&
+                    buttons[1][1].getText().equals(symbol) &&
+                    buttons[2][0].getText().equals(symbol)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void highlightWinningCells(int row, int col) {
+        String symbol = String.valueOf(currentPlayer);
+        Color winColor = new Color(152, 251, 152); // Light green
+
+        // Check and highlight row
+        if (buttons[row][0].getText().equals(symbol) &&
+                buttons[row][1].getText().equals(symbol) &&
+                buttons[row][2].getText().equals(symbol)) {
+            highlightCells(new int[][]{{row, 0}, {row, 1}, {row, 2}}, winColor);
+            return;
+        }
+
+        // Check and highlight column
+        if (buttons[0][col].getText().equals(symbol) &&
+                buttons[1][col].getText().equals(symbol) &&
+                buttons[2][col].getText().equals(symbol)) {
+            highlightCells(new int[][]{{0, col}, {1, col}, {2, col}}, winColor);
+            return;
+        }
+
+        // Check and highlight main diagonal
+        if (buttons[0][0].getText().equals(symbol) &&
+                buttons[1][1].getText().equals(symbol) &&
+                buttons[2][2].getText().equals(symbol)) {
+            highlightCells(new int[][]{{0, 0}, {1, 1}, {2, 2}}, winColor);
+            return;
+        }
+
+        // Check and highlight anti-diagonal
+        if (buttons[0][2].getText().equals(symbol) &&
+                buttons[1][1].getText().equals(symbol) &&
+                buttons[2][0].getText().equals(symbol)) {
+            highlightCells(new int[][]{{0, 2}, {1, 1}, {2, 0}}, winColor);
+        }
+    }
+
+    private void highlightCells(int[][] cells, Color color) {
+        for (int[] cell : cells) {
+            int r = cell[0];
+            int c = cell[1];
+            buttons[r][c].setBackground(color);
+            buttons[r][c].setBorder(BorderFactory.createLineBorder(new Color(50, 205, 50), 3));
+        }
+    }
+
+    private void showWinningMessage() {
+        String message = statusLabel.getText();
+        int option = JOptionPane.showOptionDialog(
+                this,
+                message + "\nХотите сыграть еще?",
+                "Игра окончена",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                new Object[]{"Новая игра", "Выход"},
+                "Новая игра"
+        );
+
+        if (option == JOptionPane.YES_OPTION) {
+            resetGame();
+        }
+    }
+
+    private void resetGame() {
+        currentPlayer = 'X';
+        gameOver = false;
+        movesCount = 0;
+
+        // Reset all buttons
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                buttons[row][col].setText("");
+                buttons[row][col].setBackground(Color.WHITE);
+                buttons[row][col].setForeground(Color.BLACK);
+                buttons[row][col].setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 2));
+                buttons[row][col].setEnabled(true);
+            }
+        }
+
+        updateStatusLabel();
+    }
+
+    private void resetScore() {
+        xWins = 0;
+        oWins = 0;
+        draws = 0;
+        updateScoreLabel();
+    }
+
+    private void updateStatusLabel() {
+        statusLabel.setText("Ход игрока: " + currentPlayer);
+        if (currentPlayer == 'X') {
+            statusLabel.setForeground(new Color(231, 76, 60)); // Red
+        } else {
+            statusLabel.setForeground(new Color(52, 152, 219)); // Blue
+        }
+    }
+
+    private void updateScoreLabel() {
+        scoreLabel.setText("X: " + xWins + " | O: " + oWins + " | Ничьи: " + draws);
+    }
+
+    private void setupKeyboardShortcuts() {
+        // Number pad shortcuts (like phone dial)
+        String[][] keyBindings = {
+                {"Q", "0", "0"}, {"W", "0", "1"}, {"E", "0", "2"},
+                {"A", "1", "0"}, {"S", "1", "1"}, {"D", "1", "2"},
+                {"Z", "2", "0"}, {"X", "2", "1"}, {"C", "2", "2"}
+        };
+
+        for (String[] binding : keyBindings) {
+            String key = binding[0];
+            int row = Integer.parseInt(binding[1]);
+            int col = Integer.parseInt(binding[2]);
+
+            getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                    .put(KeyStroke.getKeyStroke(key), "move" + row + col);
+
+            getRootPane().getActionMap().put("move" + row + col, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (!gameOver && buttons[row][col].getText().equals("")) {
+                        makeMove(row, col);
+                    }
+                }
+            });
+        }
+
+        // Control shortcuts
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke("control N"), "newGame");
+        getRootPane().getActionMap().put("newGame", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetGame();
+            }
+        });
+
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke("control R"), "resetScore");
+        getRootPane().getActionMap().put("resetScore", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetScore();
+            }
+        });
+
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke("ESCAPE"), "exit");
+        getRootPane().getActionMap().put("exit", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+    }
+
+
+}
+public void main(String[] args) {
+    SwingUtilities.invokeLater(new Runnable() {
+        @Override
+        public void run() {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            new TicTacToePro();
+        }
+    });
+}
